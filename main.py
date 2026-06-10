@@ -730,13 +730,13 @@ class SteamStatusMonitorV2(Star):
             message += f"...以及另外 {extra_count} 个成就"
         for session in notify_sessions:
             try:
-                await self.context.send_message(session, MessageCha在([Plain(message)]))
+                await self.context.send_message(session, MessageChain([Plain(message)]))
             except Exception as e:
                 logger.error(f"发送成就通知失败: {e}")
 
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("steam on")
-    async def steam_于(self, event: AstrMessageEvent):
+    async def steam_on(self, event: AstrMessageEvent):
         '''手动启动Steam状态监控轮询（分群）'''
         group_id = str(event.get_group_id()) if hasattr(event, 'get_group_id') else 'default'
         self.group_monitor_enabled[group_id] = True
@@ -744,7 +744,7 @@ class SteamStatusMonitorV2(Star):
             yield event.plain_result("未配置 Steam API Key，请先在插件配置中填写 steam_api_key。")
             return
         steam_ids = self.group_steam_ids.get(group_id, [])
-        if not steam_ids or not any(isinstance(x, str) 和 x.strip() for x in steam_ids):
+        if not steam_ids or not any(isinstance(x, str) and x.strip() for x in steam_ids):
             yield event.plain_result(
                 "未设置监控的 SteamID 列表，请先在插件配置中填写 steam_ids，"
                 "或使用 /steam bind [SteamID/好友码] 添加要监控的玩家。"
@@ -771,7 +771,7 @@ class SteamStatusMonitorV2(Star):
                 if status.get('gameid'):
                     prev = self.group_last_states[group_id].get(sid)
                     prev_gameid = prev.get('gameid') if prev else None
-                    if prev_gameid 和 prev_gameid == status.get('gameid') 和 sid in self.group_start_play_times[group_id]:
+                    if prev_gameid and prev_gameid == status.get('gameid') and sid in self.group_start_play_times[group_id]:
                         pass
                     else:
                         self.group_start_play_times[group_id][sid] = int(time.time())
@@ -779,22 +779,22 @@ class SteamStatusMonitorV2(Star):
 
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("steam bind")
-    async def steam_addid(self, event: AstrMessageEvent, steamid: str):
+    async def steam_bind(self, event: AstrMessageEvent, steamid: str):
         '''添加SteamID到本群监控列表（分群），支持多个ID用逗号或点号分隔，自动识别好友码并转换'''
         group_id = str(event.get_group_id()) if hasattr(event, 'get_group_id') else 'default'
         # 支持多个ID同时输入
-        steamid_list = [x.strip() for x in steamid。split(".") if x.strip()]
+        steamid_list = [x.strip() for x in steamid.split(".") if x.strip()]
         # 统一转换：好友码 → Steam64ID
         converted_list = []
         conversion_hints = []
         for sid in steamid_list:
-            if sid.isdigit() 和 len(sid) >= 8 和 len(sid) < 17:
+            if sid.isdigit() and len(sid) >= 8 and len(sid) < 17:
                 # 低于17位纯数字 → 视为好友码，自动转换
                 real_sid = str(int(sid) + 76561197960265728)
-                converted_list。append(real_sid)
+                converted_list.append(real_sid)
                 conversion_hints.append(f"{sid}→{real_sid}")
             else:
-                converted_list。append(sid)
+                converted_list.append(sid)
         # 校验并自动转换后再次校验
         final_ids = []
         for idx, sid in enumerate(converted_list):
@@ -831,7 +831,7 @@ class SteamStatusMonitorV2(Star):
 
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("steam unbind")
-    async def steam_delid(self, event: AstrMessageEvent, steamid: str):
+    async def steam_unbind(self, event: AstrMessageEvent, steamid: str):
         '''从本群监控组删除SteamID（分群），支持好友码自动转换'''
         group_id = str(event.get_group_id()) if hasattr(event, 'get_group_id') else 'default'
         # 好友码 → Steam64ID 转换
@@ -1115,19 +1115,19 @@ class SteamStatusMonitorV2(Star):
                     tip_text = "沉浸在游戏世界，时间过得飞快喵！"
                 elif duration_min < 300:
                     tip_text = "肝到手软了喵！主人不如陪陪咱~"
-                elif duration_min < 600: # 从此处往下，缩短了点触发所需时长
+                elif duration_min < 600:
                     tip_text = "你吃饭了吗？还是说你已经忘了吃饭这件事？"
-                elif duration_min < 800: #1200
+                elif duration_min < 1200:
                     tip_text = "家里电费都要被你玩光了喵！"
-                elif duration_min < 1200: #1800 
+                elif duration_min < 1800:
                     tip_text = "咱都要给你颁发‘不眠猫’勋章了！"
-                elif duration_min < 1800: #2400
+                elif duration_min < 2400:
                     tip_text = "主人你还活着喵？你是不是忘了关电脑呀~"
                 else:
                     tip_text = "你已经和椅子合为一体，成为传说中的‘椅子精’了喵！"
             font_path = self.get_font_path('NotoSansHans-Regular.otf')
             img_bytes = await render_game_end(
-                self.data_dir， steamid, player_name, avatar_url, gameid, zh_game_name,
+                self.data_dir, steamid, player_name, avatar_url, gameid, zh_game_name,
                 end_time_str, tip_text, duration_h, sgdb_api_key=self.SGDB_API_KEY, font_path=font_path, sgdb_game_name=en_game_name, appid=gameid, sgdb_api_base=self.SGDB_API_BASE
             )
             msg = f"👋 {player_name} 不玩 {zh_game_name} 了\n游玩时间 {duration_h:.1f}小时"
@@ -1137,7 +1137,7 @@ class SteamStatusMonitorV2(Star):
                 tmp_path = tmp.name
             yield event.plain_result(msg)
             yield event.image_result(tmp_path)
-        except Excepti于 as e:
+        except Exception as e:
             import traceback
             logger.error(f"测试游戏结束图片渲染失败: {e}\n{traceback.format_exc()}")
             yield event.plain_result(f"渲染异常: {e}")
@@ -1159,7 +1159,7 @@ class SteamStatusMonitorV2(Star):
                     cleared.append(d)
             msg = "已清除以下缓存目录：\n" + "\n".join(cleared) if cleared else "未找到任何缓存目录，无需清理。"
             yield event.plain_result(msg)
-        except Excepti于 as e:
+        except Exception as e:
             yield event.plain_result(f"清除缓存失败: {e}")
 
     @filter.permission_type(filter.PermissionType.ADMIN)
@@ -1302,11 +1302,11 @@ class SteamStatusMonitorV2(Star):
                 duration_min = 0
                 start_time = start_play_times.setdefault(sid, {}).get(prev_gameid, now)
                 if prev_gameid in start_play_times.get(sid, {}):
-                    duration_min = (现在 - start_play_times[sid][prev_gameid]) / 60
+                    duration_min = (now - start_play_times[sid][prev_gameid]) / 60
                     if duration_min == 0:
                         for _ in range(2):
                             start_time = start_play_times[sid].get(prev_gameid, now)
-                            duration_min = (现在 - start_time) / 60
+                            duration_min = (now - start_time) / 60
                             if duration_min > 0:
                                 break
                             await asyncio.sleep(1)
@@ -1500,7 +1500,7 @@ class SteamStatusMonitorV2(Star):
                             notify_sessions.append(notify_session)
                         for push_gid in self.push_groups.get(sid, []):
                             push_session = getattr(self, 'notify_sessions', {}).get(push_gid, None)
-                            if push_session 和 push_session not in notify_sessions:
+                            if push_session and push_session not in notify_sessions:
                                 notify_sessions.append(push_session)
                         if notify_sessions:
                             try:
@@ -1527,13 +1527,13 @@ class SteamStatusMonitorV2(Star):
                                     tip_text = "沉浸在游戏世界，时间过得飞快喵！"
                                 elif duration_min < 300:
                                     tip_text = "肝到手软了喵！主人不如陪陪咱~"
-                                elif duration_min < 600: # 从此处往下，缩短了点触发所需时长
+                                elif duration_min < 600:
                                     tip_text = "你吃饭了吗？还是说你已经忘了吃饭这件事？"
-                                elif duration_min < 800:
-                                    tip_text = "家里电费都要被你玩光了喵！"
                                 elif duration_min < 1200:
-                                    tip_text = "咱都要给你颁发‘不眠猫’勋章了！"
+                                    tip_text = "家里电费都要被你玩光了喵！"
                                 elif duration_min < 1800:
+                                    tip_text = "咱都要给你颁发‘不眠猫’勋章了！"
+                                elif duration_min < 2400:
                                     tip_text = "主人你还活着喵？你是不是忘了关电脑呀~"
                                 else:
                                     tip_text = "你已经和椅子合为一体，成为传说中的‘椅子精’了喵！"
@@ -1603,7 +1603,7 @@ class SteamStatusMonitorV2(Star):
                     poll_str = f"下次轮询{seconds_left//60}分钟后"
                 if gameid:
                     state_str = f"🟢正在玩 {await self.get_chinese_game_name(gameid, game)}"
-                elif personastate 和 int(personastate) > 0:
+                elif personastate and int(personastate) > 0:
                     state_str = "🟡在线"
                 elif lastlogoff:
                     hours_ago = (now - int(lastlogoff)) / 3600
@@ -1636,7 +1636,7 @@ class SteamStatusMonitorV2(Star):
         if steamid.isdigit() and len(steamid) >= 8 and len(steamid) < 17:
             steamid = str(int(steamid) + 76561197960265728)
         elif not steamid.isdigit() or len(steamid) != 17:
-            yield event.plain_result("SteamID无效（需为Steam64ID，17位，或好友码）")
+            yield event.plain_result("SteamID无效（需为64位数字串，17位，或好友码）")
             return
         # 检查主群是否已轮询该SteamID
         found = False
@@ -1665,7 +1665,7 @@ class SteamStatusMonitorV2(Star):
         if steamid.isdigit() and len(steamid) >= 8 and len(steamid) < 17:
             steamid = str(int(steamid) + 76561197960265728)
         elif not steamid.isdigit() or len(steamid) != 17:
-            yield event.plain_result("SteamID无效（需为Steam64ID，17位，或好友码）")
+            yield event.plain_result("SteamID无效（需为64位数字串，17位，或好友码）")
             return
         if steamid not in self.push_groups or group_id not in self.push_groups[steamid]:
             yield event.plain_result("本群未在该SteamID的推送组中。")
