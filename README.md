@@ -1,4 +1,10 @@
-# Steam 状态监控插件V2
+# Steam 状态监控插件V2(edit)
+此分支是个人爱好改的二改版本，变更内容如下。
+
+2026年6月10日：
+- 添加steam好友码兼容。避免有人设置了自定义URL导致不知道哪里看自己SteamID的情况。
+- addid/delid改为bind/unbind。避免有其他bot也装了同款插件导致多bot同时绑定同时推送刷屏。
+- 缩短了结束游戏时友好提示语的触发所需时长。
 
 ## 访问统计
 ![访问统计](https://count.getloli.com/get/@astrbot_ssm?theme=rule34)
@@ -26,7 +32,7 @@
 1. 在AstrBot网页后台的配置中配置 Steam_Web_API_Key：[点击获取](https://steamcommunity.com/dev/apikey)
 2. 在AstrBot网页后台的配置中配置 SGDB_API_KEY（用于获取封面图，可选）：[点击获取](https://www.steamgriddb.com/profile/preferences/api)
 3. 在需要进行提醒的群聊输入指令：
-   `/steam addid [Steam64位ID]`  （如：/steam addid 7656119xxxxxxxxxx）
+   `/steam bind [Steam64位ID 或 好友代码]`  （如：/steam bind 7656119xxxxxxxxxx或1265xxxxxx）
 4. 启动轮询：
    `/steam on`  启动本群 Steam 状态监控，后续状态变更会自动推送。
 
@@ -52,8 +58,8 @@
 - `/steam alllist` 列出所有群聊分组及玩家状态
 - `/steam config` 查看当前插件配置
 - `/steam set [参数] [值]` 设置配置参数（如 `/steam set poll_interval_sec 30`）
-- `/steam addid [SteamID]` 添加SteamID到本群监控列表
-- `/steam delid [SteamID]` 从本群监控列表删除SteamID
+- `/steam bind [SteamID/好友码]` 添加SteamID到本群监控列表
+- `/steam unbind [SteamID/好友码]` 从本群监控列表删除SteamID
 - `/steam push_group [SteamID]` 添加id到联动推送的副群（轮询一次通知多个群聊）
 - `/steam delpush_group [SteamID]`删除id联动推送的副群
 - `/steam openbox [SteamID]` 查看指定SteamID的全部详细信息
